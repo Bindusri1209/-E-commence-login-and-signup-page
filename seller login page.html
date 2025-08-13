@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Seller Login</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ShopEase</div>
+    <nav><a href="index.html">Home</a></nav>
+  </header>
+
+  <main class="container narrow">
+    <h2>Seller Login / Apply</h2>
+
+    <form id="sellerLoginForm" class="card">
+      <input id="sellerEmail" placeholder="Email" type="email" required>
+      <input id="sellerPassword" placeholder="Password" type="password" required>
+      <button type="submit">Login</button>
+      <p class="muted">Don't have seller account? <a href="#" id="applySellerBtn">Apply as Seller</a></p>
+    </form>
+
+    <form id="sellerApplyForm" class="card hidden">
+      <input id="sName" placeholder="Full name" required>
+      <input id="sEmail" placeholder="Email" type="email" required>
+      <input id="sPassword" placeholder="Password" type="password" required>
+      <input id="sShop" placeholder="Shop name" required>
+      <button type="submit">Apply</button>
+      <p class="muted"><a href="#" id="backSellerLogin">Back to login</a></p>
+    </form>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    const sellerLoginForm = document.getElementById('sellerLoginForm');
+    const sellerApplyForm = document.getElementById('sellerApplyForm');
+    document.getElementById('applySellerBtn').addEventListener('click', e=>{ e.preventDefault(); sellerLoginForm.classList.add('hidden'); sellerApplyForm.classList.remove('hidden'); });
+    document.getElementById('backSellerLogin').addEventListener('click', e=>{ e.preventDefault(); sellerApplyForm.classList.add('hidden'); sellerLoginForm.classList.remove('hidden'); });
+
+    sellerLoginForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      const email = document.getElementById('sellerEmail').value;
+      const pass = document.getElementById('sellerPassword').value;
+      const ok = appAPI.login(email, pass);
+      if (!ok) { alert('Invalid credentials or not approved yet'); return; }
+      const u = appAPI.getCurrentUser();
+      if (u.role !== 'seller') { alert('Not a seller account'); return; }
+      if (!u.isApproved) { alert('Seller account not approved by admin yet'); return; }
+      window.location.href = 'seller.html';
+    });
+
+    sellerApplyForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      const name = document.getElementById('sName').value;
+      const email = document.getElementById('sEmail').value;
+      const pass = document.getElementById('sPassword').value;
+      const shop = document.getElementById('sShop').value;
+      const ok = appAPI.applySeller({ name, email, password: pass, shop });
+      if (!ok) { alert('Email already used'); return; }
+      alert('Seller application submitted. Wait for admin approval.');
+      sellerApplyForm.classList.add('hidden'); sellerLoginForm.classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>

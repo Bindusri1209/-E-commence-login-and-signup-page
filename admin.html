@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Admin Panel</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ShopEase</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <button id="adminLogout">Logout</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h2>Admin Panel — Manage Sellers & Products</h2>
+
+    <section class="card">
+      <h3>Pending Seller Applications</h3>
+      <div id="pendingList"></div>
+    </section>
+
+    <section class="card">
+      <h3>All Products</h3>
+      <div id="allProducts" class="grid"></div>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    if (!appAPI.getCurrentUser()) { alert('Please login'); location.href='admin-login.html'; }
+    const u = appAPI.getCurrentUser();
+    if (u.role !== 'admin') { alert('Not admin'); location.href='index.html'; }
+    document.getElementById('adminLogout').addEventListener('click', ()=>{ appAPI.logout(); location.href='index.html'; });
+
+    function renderPending(){
+      const el = document.getElementById('pendingList'); el.innerHTML = '';
+      appAPI.getPendingSellers().forEach((s, idx)=>{
+        el.innerHTML += `
+          <div class="card small">
+            <p><strong>${s.name}</strong> (${s.shop})</p>
+            <p>${s.email}</p>
+            <button onclick="appAPI.approveSeller('${s.email}'); renderPending(); renderAllProducts();">Approve</button>
+            <button onclick="appAPI.rejectSeller('${s.email}'); renderPending();">Reject</button>
+          </div>`;
+      });
+    }
+    function renderAllProducts(){
+      const el = document.getElementById('allProducts'); el.innerHTML = '';
+      appAPI.getAllProducts().forEach(p=>{
+        el.innerHTML += `
+          <div class="card">
+            <img src="${p.image}" alt="${p.title}">
+            <h4>${p.title}</h4>
+            <p>₹ ${p.price}</p>
+            <p class="muted">${p.sellerName ?? 'Site'}</p>
+            <button onclick="appAPI.removeProduct(${p.id}); renderAllProducts();">Delete</button>
+          </div>`;
+      });
+    }
+
+    renderPending(); renderAllProducts();
+  </script>
+</body>
+</html>

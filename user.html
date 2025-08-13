@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>User Portal</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ShopEase</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <button id="logoutBtn">Logout</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h2>Welcome, <span id="uName"></span></h2>
+
+    <section>
+      <h3>Products</h3>
+      <div id="uProducts" class="grid"></div>
+    </section>
+
+    <section>
+      <h3>Your Cart</h3>
+      <div id="cartArea" class="card"></div>
+      <button id="checkoutBtn">Checkout</button>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    // Check user logged in
+    if (!appAPI.getCurrentUser()) { alert('Please login'); location.href = 'user-login.html'; }
+
+    document.getElementById('uName').textContent = appAPI.getCurrentUser().name;
+    document.getElementById('logoutBtn').addEventListener('click', ()=> { appAPI.logout(); location.href='index.html'; });
+
+    // show products
+    const uProductsEl = document.getElementById('uProducts');
+    uProductsEl.innerHTML = '';
+    appAPI.getPublicProducts().forEach(p=>{
+      uProductsEl.innerHTML += `
+        <div class="card">
+          <img src="${p.image}" alt="${p.title}">
+          <h4>${p.title}</h4>
+          <p>₹ ${p.price}</p>
+          <button onclick="appUI.addToCart(${p.id})">Add to cart</button>
+        </div>`;
+    });
+
+    // cart rendering
+    function renderCart(){ document.getElementById('cartArea').innerHTML = appUI.renderCart(); }
+    renderCart();
+    window.renderCart = renderCart;
+
+    document.getElementById('checkoutBtn').addEventListener('click', ()=>{
+      const success = appAPI.checkout();
+      if(success) { alert('Order placed!'); renderCart(); } else alert('Cart empty');
+    });
+  </script>
+</body>
+</html>

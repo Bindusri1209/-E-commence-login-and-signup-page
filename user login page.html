@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>User Login</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ShopEase</div>
+    <nav><a href="index.html">Home</a></nav>
+  </header>
+
+  <main class="container narrow">
+    <h2>User Login</h2>
+
+    <form id="userLoginForm" class="card">
+      <input id="userEmail" placeholder="Email" type="email" required>
+      <input id="userPassword" placeholder="Password" type="password" required>
+      <button type="submit">Login</button>
+      <p class="muted">No account? <a href="#" id="createUser">Create user</a></p>
+    </form>
+
+    <form id="userRegisterForm" class="card hidden">
+      <input id="regName" placeholder="Full name" required>
+      <input id="regEmail" placeholder="Email" type="email" required>
+      <input id="regPass" placeholder="Password" type="password" required>
+      <button type="submit">Register</button>
+      <p class="muted"><a href="#" id="showLogin">Back to login</a></p>
+    </form>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    // Login logic
+    const userLoginForm = document.getElementById('userLoginForm');
+    const userRegisterForm = document.getElementById('userRegisterForm');
+    document.getElementById('createUser').addEventListener('click', e=>{
+      e.preventDefault(); userLoginForm.classList.add('hidden'); userRegisterForm.classList.remove('hidden');
+    });
+    document.getElementById('showLogin').addEventListener('click', e=>{
+      e.preventDefault(); userRegisterForm.classList.add('hidden'); userLoginForm.classList.remove('hidden');
+    });
+
+    userLoginForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      const email = document.getElementById('userEmail').value;
+      const pass = document.getElementById('userPassword').value;
+      const ok = appAPI.login(email, pass);
+      if (!ok) { alert('Invalid credentials'); return; }
+      window.location.href = 'user.html';
+    });
+
+    userRegisterForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      const name = document.getElementById('regName').value;
+      const email = document.getElementById('regEmail').value;
+      const pass = document.getElementById('regPass').value;
+      const res = appAPI.registerUser({ name, email, password: pass, role: 'user' });
+      if (!res) { alert('Email already used'); return; }
+      alert('Registered! You can now login.');
+      userRegisterForm.classList.add('hidden'); userLoginForm.classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>

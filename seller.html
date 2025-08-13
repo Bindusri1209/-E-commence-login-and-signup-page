@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Seller Dashboard</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">ShopEase</div>
+    <nav>
+      <a href="index.html">Home</a>
+      <button id="sellerLogout">Logout</button>
+    </nav>
+  </header>
+
+  <main class="container">
+    <h2>Seller Dashboard — <span id="sellerName"></span></h2>
+
+    <section class="card">
+      <h3>Add Product</h3>
+      <form id="addProductForm">
+        <input id="pTitle" placeholder="Title" required>
+        <input id="pPrice" placeholder="Price" type="number" required>
+        <input id="pImage" placeholder="Image URL" required>
+        <button type="submit">Add Product</button>
+      </form>
+    </section>
+
+    <section>
+      <h3>Your Products</h3>
+      <div id="sellerProducts" class="grid"></div>
+    </section>
+  </main>
+
+  <script src="js/app.js"></script>
+  <script>
+    if (!appAPI.getCurrentUser()) { alert('Please login'); location.href='seller-login.html'; }
+    const u = appAPI.getCurrentUser();
+    if (u.role !== 'seller') { alert('Not a seller'); location.href='index.html'; }
+    if (!u.isApproved) { alert('Seller not approved'); location.href='seller-login.html'; }
+
+    document.getElementById('sellerName').textContent = u.name;
+    document.getElementById('sellerLogout').addEventListener('click', ()=>{ appAPI.logout(); location.href='index.html'; });
+
+    // load seller products
+    function refreshSellerProducts(){
+      const el = document.getElementById('sellerProducts');
+      el.innerHTML = '';
+      appAPI.getProductsBySeller(u.email).forEach(p=>{
+        el.innerHTML += `
+          <div class="card">
+            <img src="${p.image}" alt="${p.title}">
+            <h4>${p.title}</h4>
+            <p>₹ ${p.price}</p>
+            <p>Stock: ${p.stock ?? 0}</p>
+            <button onclick="appAPI.removeProduct(${p.id}) || refreshSellerProducts()">Delete</button>
+          </div>`;
+      });
+    }
+    refreshSellerProducts();
+
+    document.getElementById('addProductForm').addEventListener('submit', e=>{
+      e.preventDefault();
+      const title = document.getElementById('pTitle').value;
+      const price = parseFloat(document.getElementById('pPrice').value);
+      const image = document.getElementById('pImage').value;
+      appAPI.addProduct({ title, price, image, sellerEmail: u.email });
+      refreshSellerProducts();
+      e.target.reset();
+    });
+  </script>
+</body>
+</html>
